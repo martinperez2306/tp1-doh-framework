@@ -12,7 +12,7 @@ servers:
 paths:
   /domains/{domain}:
     get:
-      operationId: "api.dominios.obtener"
+      operationId: "api.dominios.obtener_uno"
       tags:
         - "Dominios"
       summary: "Obtiene la IP asociada a un dominio particular"

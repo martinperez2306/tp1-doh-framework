@@ -2,11 +2,10 @@ from flask import abort, make_response
 
 # Data to serve with our API
 dominios = {
-    1: {
-        'id': 1,
-        'nombre': 'Cosme Fulanito',
-        'dni': '11222333',
-        'padron': '88999',
+    'fi.uba.ar': {
+        'domain': 'fi.uba.ar',
+        'ip': '157.92.49.38',
+        'custom': False
     },
 }
 
@@ -20,17 +19,17 @@ def obtener():
     # Create the list of people from our data
     return sorted(dominios.values(), key=lambda dominio: dominio.get('nombre'))
 
-def obtener_uno(id_alumno):
+def obtener_uno(domain):
     """
     Esta funcion maneja el request GET /api/alumnos/{id_alumno}
 
      :id_alumno body:  id del alumno que se quiere obtener
     :return:        200 alumno, 404 alumno no encontrado
     """
-    if id_alumno not in alumnos:
-        return abort(404, 'El alumno no fue encontrado')
+    if domain not in dominios:
+        return abort(404, 'El Dominio solicitado no se encuentra en sistema')
 
-    return alumnos.get(id_alumno)
+    return dominios.get(domain)
 
 def crear(**kwargs):
     """
