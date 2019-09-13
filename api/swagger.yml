@@ -12,7 +12,7 @@ servers:
 paths:
   /domains/{domain}:
     get:
-      operationId: "api.dominios.obtener_uno"
+      operationId: "api.dominios.getDomain"
       tags:
         - "Dominios"
       summary: "Obtiene la IP asociada a un dominio particular"
@@ -38,7 +38,7 @@ paths:
           description: "El Dominio solicitado no se encuentra en sistema"
   /custom-domains:
     post:
-      operationId: "api.dominios.crear"
+      operationId: "api.dominios.addDomain"
       tags:
         - "Dominios"
       summary: "Crea una entrada para sobreescribir la IP de un Dominio en particular"
