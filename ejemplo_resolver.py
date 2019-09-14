@@ -5,7 +5,7 @@ import re
 ips = []
 try:
     # get the dns resolutions for this domain
-    result = dns.resolver.query('sadsadm')
+    result = dns.resolver.query('www.yahoo.com')
     ips = [ip.address for ip in result]
 except dns.resolver.NXDOMAIN as e:
     # the domain does not exist so dns resolutions remain empty
