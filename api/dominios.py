@@ -14,6 +14,11 @@ dominios = {
         'ip': '999.999.999.999',
         'custom': True
     },
+    'sosa.domain': {
+        'domain': 'sosa.domain',
+        'ip': ['1.1.1.1'],
+        'custom': False
+    }
 }
 
 def resolveDns(domain):
@@ -95,6 +100,7 @@ def addDomain(**kwargs):
         return abort(400, 'Dominio ya existente')
 
     dominioCreado = createDomain(domain,ip,custom)
+    dominios[domain] = dominioCreado
 
     return make_response(dominioCreado, 201)
 
@@ -121,7 +127,10 @@ def modificar(**kwargs):
     dominioAModificar = dominios.get(domain)
     dominioAModificar['ip'] = ip
 
-    return make_response(dominioAModificar,200)
+    # Se retorna una copia del diminio modificado
+    returnDomain = createDomain(dominioAModificar.get('domain'), dominioAModificar.get('ip'), dominioAModificar.get('custom'))
+
+    return make_response(returnDomain,200)
 
 def borrar(id_alumno):
     """
