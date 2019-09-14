@@ -7,19 +7,57 @@ from flask import abort, make_response
 #Estructura de datos que representa los dominios
 #   Tiene la responsabilidad de
 #       * Cachear las IPs correspondientes a un dominio que resolvio por DNS
+#           * domain : string
+#           * ip : [string]
+#           * custom : boolean
 #       * Almacenar los custom domains ceados
+#           * domain : string
+#           * ip : string
+#           * custom : boolean
 dominios = {
     'martin.domain': {
         'domain': 'martin.domain',
         'ip': '999.999.999.999',
         'custom': True
-    },
-    'sosa.domain': {
-        'domain': 'sosa.domain',
-        'ip': ['1.1.1.1'],
-        'custom': False
     }
 }
+
+def resolveRoundRobin(domainCached, newsIps):
+    """
+    Esta funcion resuelve por Round Robin las IPs obtenidas al resolver el DNS de un dominio.
+    Actualiza las IPs del dominio con las nuevas IP obtenidas.
+    Si alguna de las IP deja de ser validas, se remueven del dominio cacheado. Si hay una nueva se agrega en ultimo lugar.
+    Regresa segun metodo Round Robin la IP correspondiente.
+    PRE: Recibe un dominio resuelto por DNS cacheado en sistema y un listado no vacio de las nuevas IPs resueltas por DNS
+    POST: Modifica el dominio cacheado y devuelve la IP correspondiente por Round Robin. 
+    """
+
+    ipsCacheadas = domainCached.get('ip')
+    ipsActualizadas = []
+
+    #Limpiamos las IPs que ya no son validas
+    for ipCacheada in ipsCacheadas:
+        print("IP cacheada " + ipCacheada)
+        if ipCacheada in newsIps:
+            ipsActualizadas.append(ipCacheada)
+
+    #Por Round Robin se devuelve la primera IP de las actualizadas
+    returnIp = ipsActualizadas[0]
+
+    #Agregamos las nuevas Ips validas
+    for newIp in newsIps:
+        print("IP nueva " + newIp)
+        if newIp not in ipsActualizadas:
+            ipsActualizadas.append(newIp)
+
+    #Apllicamos Round Robin sobre los elementos
+    ipsActualizadas.pop(0)
+    ipsActualizadas.append(returnIp)
+
+    #Actualizamos el cache
+    domainCached['ip'] = ipsActualizadas
+
+    return returnIp
 
 def resolveDns(domain):
     """
@@ -71,7 +109,15 @@ def getDomain(domain):
         else:
             return dominios.get(domain)
     else:
-        return createDomain(domain, ips[0], False)
+        if domain not in dominios:
+            print("Nuevo Dominio " + domain)
+            cacheDnsDomain = createDomain(domain,ips,False)
+            dominios[domain] = cacheDnsDomain
+            return createDomain(cacheDnsDomain.get('domain'), resolveRoundRobin(cacheDnsDomain, ips), cacheDnsDomain.get('custom'))
+        else:
+            print("Dominio cacheado " + domain)
+            cacheDnsDomain = dominios[domain]
+            return createDomain(cacheDnsDomain.get('domain'), resolveRoundRobin(cacheDnsDomain, ips), cacheDnsDomain.get('custom'))
 
 def addDomain(**kwargs):
     """
