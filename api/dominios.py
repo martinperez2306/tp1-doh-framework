@@ -12,7 +12,7 @@ dominios = {
     'martin.domain': {
         'domain': 'martin.domain',
         'ip': '999.999.999.999',
-        'custom': False
+        'custom': True
     },
 }
 
@@ -22,7 +22,7 @@ def resolveDns(domain):
 
     :return:        lista de las IPs asociadas al dominio
     """
-    # Create the list of people from our data
+
     ips = []
     try:
         # Obtiene las resoluciones dns para este dominio
@@ -40,6 +40,7 @@ def createDomain(domain,ip,custom):
     """
     Esta funcion crea la estructura de datos Dominio
     """
+
     domain = {
         'domain' : domain,
         'ip' : ip,
@@ -72,8 +73,9 @@ def addDomain(**kwargs):
     Esta funcion maneja el request POST /api/custom-domains
 
      :param body:  Dominio a crear en sistema
-    :return:        201 Dominio creado, 400 Dominio existente en sistema
+    :return:        201 Dominio creado, 400 Dominio existente en sistema o request mal formada
     """
+
     dominio = kwargs.get('body')
     domain = dominio.get('domain')
     ip = dominio.get('ip')
@@ -97,11 +99,29 @@ def addDomain(**kwargs):
     return make_response(dominioCreado, 201)
 
 def modificar(**kwargs):
+    """
+    Esta funcion maneja el request PUT /api/custom-domains
+
+     :param body:  Dominio a modificar en sistema
+    :return:        200 Dominio modificado, 404 Dominio no encontrado en sistema, 400 Request mal formada
+    """
+
     dominio = kwargs.get('body')
     domain = dominio.get('domain')
     ip = dominio.get('ip')
 
-    return make_response('',200)
+    if not domain:
+        return abort(400, 'Parametro domain requerido no esta presente')
+    if not ip:
+        return abort(400, 'Parametro ip requerido no esta presente')
+
+    if domain not in dominios:
+        return abort(404, 'El Dominio solicitado no se encuentra en sistema')
+
+    dominioAModificar = dominios.get(domain)
+    dominioAModificar['ip'] = ip
+
+    return make_response(dominioAModificar,200)
 
 def borrar(id_alumno):
     """
