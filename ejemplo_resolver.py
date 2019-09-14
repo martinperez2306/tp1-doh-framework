@@ -1,6 +1,20 @@
 import dns.resolver
+import re
 
 # Resolve www.yahoo.com
-result = dns.resolver.query('www.yahoo.com')
-for answer in result.response.answer:
-    print(answer)
+ips = []
+try:
+    # get the dns resolutions for this domain
+    result = dns.resolver.query('www.yahoo.com')
+    ips = [ip.address for ip in result]
+except dns.resolver.NXDOMAIN as e:
+    # the domain does not exist so dns resolutions remain empty
+    pass
+except dns.resolver.NoAnswer as e:
+    # the resolver is not answering so dns resolutions remain empty
+    pass
+
+if not ips:
+	print("No existe el dominio")
+for ip in ips:
+	print(ip)

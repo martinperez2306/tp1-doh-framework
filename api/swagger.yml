@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
   version: "1.0.0"
-  title: API de Alumnos
-  description: Documentación de la API de Alumnos de la materia 75.43 Introducción a Sistemas Distribuidos
+  title: API de Dominios
+  description: Documentación de la API de Dominios de la materia 75.43 Introducción a Sistemas Distribuidos
 
 servers:
   - url: http://localhost:8080/api
@@ -10,107 +10,97 @@ servers:
 
 # Paths servidos por la aplicación
 paths:
-  /alumnos:
+  /domains/{domain}:
     get:
-      operationId: "api.alumnos.obtener_todos"
+      operationId: "api.dominios.getDomain"
       tags:
-        - "Alumnos"
-      summary: "Colección de alumnos de la materia"
-      description: "Obtiene la lista de todos los alumnos de la materia existentes en el sistema"
+        - "Dominios"
+      summary: "Obtiene la IP asociada a un dominio particular"
+      description: "Obtiene la IP asociada a un dominio en particular, pudiendo ser este un custom domain
+                    creado previamente. Si en hostname tiene varias IPs distintas, el servicio deberá devolver
+                    sólo una. Sin embargo, ​ si se vuelve a pedir la IP de ese dominio​ , deberá irse alternando
+                    entre las que provee el resolver de DNS en forma de ​ round robin."
+      parameters:
+        - in: path
+          name: domain
+          required: true
+          schema:
+            type: string
+          description: Nombre del Dominio a obtener su IP asociada.
       responses:
         200:
           description: "Operación de lectura exitosa"
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Alumno'
+                $ref: '#/components/schemas/Dominio'
+        404:
+          description: "El Dominio solicitado no se encuentra en sistema"
+  /custom-domains:
     post:
-      operationId: "api.alumnos.crear"
+      operationId: "api.dominios.addDomain"
       tags:
-        - "Alumnos"
-      summary: "Alta de un alumno de la materia"
-      description: "Crea un nuevo alumno y lo agrega a la lista de alumnos de la materia"
+        - "Dominios"
+      summary: "Crea una entrada para sobreescribir la IP de un Dominio en particular"
+      description: "Crea una entrada para sobreescribir la IP de un Dominio en particular."
       requestBody:
         required: true
-        x-body-name: 'alumno'
+        x-body-name: 'dominio'
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/InputAlumno'
+              $ref: '#/components/schemas/InputDominio'
       responses:
         201:
-          description: "Se creo el alumno correctamente"
+          description: "Se creo el Domino correctamente"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Alumno'
+                $ref: '#/components/schemas/Dominio'
         400:
-          description: "DNI o padron duplicado"
-  /alumnos/{id_alumno}:
-    get:
-      operationId: "api.alumnos.obtener_uno"
-      tags:
-        - "Alumnos"
-      summary: "Alumno de la materia"
-      description: "Obtiene un alumno particular de la materia"
-      parameters:
-        - in: path
-          name: id_alumno
+          description: "Dominio ya existente o cuerpo del Request mal formado"
+    put:
+        operationId: "api.dominios.modificar"
+        tags:
+          - "Dominios"
+        summary: "Edita un Dominio ya existente en el sistema"
+        description: "Edita un Dominio ya existente en el sistema."
+        requestBody:
           required: true
-          schema:
-            type: integer
-          description: El id del usuario a obtener
-      responses:
-        200:
-          description: "Operación de lectura exitosa"
+          x-body-name: 'dominio'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Alumno'
-        404:
-          description: "Alumno no encontrado"
-    delete:
-      operationId: "api.alumnos.borrar"
-      tags:
-        - "Alumnos"
-      summary: "Borrar alumno de la materia"
-      description: "Borra un alumno de la materia"
-      parameters:
-        - in: path
-          name: id_alumno
-          required: true
-          schema:
-            type: integer
-          description: El id del usuario a borrar
-      responses:
-        204:
-          description: "Operación de lectura exitosa"
-        404:
-          description: "Alumno no encontrado"
+                $ref: '#/components/schemas/InputDominio'
+        responses:
+          200:
+            description: "El Dominio se actualizo correctamente"
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Dominio'
+          404:
+            description: "El Dominio solicitado no se encuentra en sistema"
+          400:
+            description: "Cuerpo del Request mal formado"
 # Declaración de tipos de datos
 components:
   schemas:
-    Alumno:
+    Dominio:
       type: "object"
       properties:
-        id:
-          type: "number"
-        nombre:
+        domain:
           type: "string"
-        dni:
+        ip:
           type: "string"
-        padron:
-          type: "string"
-    InputAlumno:
+        custom:
+          type: "boolean"
+    InputDominio:
       type: "object"
       properties:
-        nombre:
+        domain:
           type: "string"
-        dni:
-          type: "string"
-        padron:
+        ip:
           type: "string"
     Error:
       type: "object"
