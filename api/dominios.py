@@ -5,6 +5,9 @@ from flask import abort, make_response
 # Data to serve with our API
 
 #Estructura de datos que representa los dominios
+#   Tiene la responsabilidad de
+#       * Cachear las IPs correspondientes a un dominio que resolvio por DNS
+#       * Almacenar los custom domains ceados
 dominios = {
     'martin.domain': {
         'domain': 'martin.domain',
@@ -33,11 +36,14 @@ def resolveDns(domain):
         pass
     return ips
 
-def createDomain(domain,ip):
+def createDomain(domain,ip,custom):
+    """
+    Esta funcion crea la estructura de datos Dominio
+    """
     domain = {
         'domain' : domain,
         'ip' : ip,
-        'custom' : False
+        'custom' : custom
     }
     return domain
 
@@ -59,7 +65,7 @@ def getDomain(domain):
         else:
             return dominios.get(domain)
     else:
-        return createDomain(domain, ips[0])
+        return createDomain(domain, ips[0], False)
 
 def addDomain(**kwargs):
     """
@@ -72,8 +78,11 @@ def addDomain(**kwargs):
     domain = dominio.get('domain')
     ip = dominio.get('ip')
     custom = True
-    if not domain or not ip:
-        return abort(400, 'Faltan datos para crear un Dominio')
+
+    if not domain:
+        return abort(400, 'Parametro domain requerido no esta presente')
+    if not ip:
+        return abort(400, 'Parametro ip requerido no esta presente')
 
     dup = False
     for dominio_existente in dominios.values():
@@ -83,11 +92,16 @@ def addDomain(**kwargs):
     if dup:
         return abort(400, 'Dominio ya existente')
 
-    new_id = max(alumnos.keys()) + 1
-    alumno['id'] = new_id
-    alumnos[new_id] = alumno
+    dominioCreado = createDomain(domain,ip,custom)
 
-    return make_response(alumno, 201)
+    return make_response(dominioCreado, 201)
+
+def modificar(**kwargs):
+    dominio = kwargs.get('body')
+    domain = dominio.get('domain')
+    ip = dominio.get('ip')
+
+    return make_response('',200)
 
 def borrar(id_alumno):
     """
@@ -102,10 +116,3 @@ def borrar(id_alumno):
     del alumnos[id_alumno]
 
     return make_response('', 204)
-
-def modificar(**kwargs):
-    dominio = kwargs.get('body')
-    domain = dominio.get('domain')
-    ip = dominio.get('ip')
-
-    return make_response('',200)
