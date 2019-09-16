@@ -110,12 +110,10 @@ def getDomain(domain):
             return dominios.get(domain)
     else:
         if domain not in dominios:
-            print("Nuevo Dominio " + domain)
             cacheDnsDomain = createDomain(domain,ips,False)
             dominios[domain] = cacheDnsDomain
             return createDomain(cacheDnsDomain.get('domain'), resolveRoundRobin(cacheDnsDomain, ips), cacheDnsDomain.get('custom'))
         else:
-            print("Dominio cacheado " + domain)
             cacheDnsDomain = dominios[domain]
             return createDomain(cacheDnsDomain.get('domain'), resolveRoundRobin(cacheDnsDomain, ips), cacheDnsDomain.get('custom'))
 
