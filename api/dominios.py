@@ -105,7 +105,10 @@ def getDomain(domain):
     ips = resolveDns(domain)
     if not ips:
         if domain not in dominios:
-            return abort(404, 'El Dominio solicitado no se encuentra en sistema o bien no se encontro IP por DNS')
+            notFound = {
+                'error' : 'domain not found'
+            }
+            return make_response(notFound,404)
         else:
             return dominios.get(domain)
     else:
