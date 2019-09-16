@@ -163,13 +163,17 @@ def modificar(**kwargs):
     domain = dominio.get('domain')
     ip = dominio.get('ip')
 
-    if not domain:
-        return abort(400, 'Parametro domain requerido no esta presente')
-    if not ip:
-        return abort(400, 'Parametro ip requerido no esta presente')
+    if not domain or not ip:
+        invalidPayload = {
+            'error' : 'payload is invalid'
+        }
+        return make_response(invalidPayload,400)
 
     if domain not in dominios:
-        return abort(404, 'El Dominio solicitado no se encuentra en sistema')
+        notFound = {
+            'error' : 'domain not found'
+        }
+        return make_response(notFound,404)
 
     dominioAModificar = dominios.get(domain)
     dominioAModificar['ip'] = ip

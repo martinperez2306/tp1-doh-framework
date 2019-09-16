@@ -85,8 +85,16 @@ paths:
                   $ref: '#/components/schemas/Dominio'
           404:
             description: "El Dominio solicitado no se encuentra en sistema"
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error'
           400:
             description: "Cuerpo del Request mal formado"
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error'
 # Declaración de tipos de datos
 components:
   schemas:
