@@ -36,6 +36,10 @@ paths:
                 $ref: '#/components/schemas/Dominio'
         404:
           description: "El Dominio solicitado no se encuentra en sistema"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /custom-domains:
     post:
       operationId: "api.dominios.addDomain"
@@ -105,7 +109,5 @@ components:
     Error:
       type: "object"
       properties:
-        codigo:
-          type: "number"
-        mensaje:
+        error:
           type: "string"
