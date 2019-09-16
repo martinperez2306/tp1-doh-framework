@@ -1,4 +1,5 @@
 import dns.resolver
+import json
 
 from flask import abort, make_response
 
@@ -178,16 +179,34 @@ def modificar(**kwargs):
 
     return make_response(returnDomain,200)
 
-def borrar(id_alumno):
+def deleteDomain(domain):
     """
-    Esta funcion maneja el request DELETE /api/alumnos/{id_alumno}
+    Esta funcion maneja el request DELETE /api/custom-domains/{domain}
 
     :id_alumno body:  id del alumno que se quiere borrar
-    :return:        200 alumno, 404 alumno no encontrado
+    :return:        200 domain, 404 domain no encontrado
     """
-    if id_alumno not in alumnos:
-        return abort(404, 'El alumno no fue encontrado')
+    if domain not in dominios:
+        return abort(404, 'domain not found')
 
-    del alumnos[id_alumno]
+    dominioAEliminar = dominios.get(domain)
+    dominioAEliminar = createDomain(dominioAEliminar.get('domain'),None,None)
 
-    return make_response('', 204)
+    del dominios[domain]
+
+    return make_response(dominioAEliminar, 200)
+
+def getCustomDomains(q):
+
+    response = ItemsResponse()
+    response.items = []
+
+    for dominio in dominios.values():
+        if q in dominio.get('domain'):
+            response.items.append(dominio)
+
+    return make_response(response.toJSON(), 200)
+
+class ItemsResponse:
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
