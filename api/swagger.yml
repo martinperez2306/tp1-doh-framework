@@ -41,6 +41,29 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
   /custom-domains:
+    get:
+      operationId: "api.dominios.getCustomDomains"
+      tags:
+        - "Dominios"
+      summary: "Crea una entrada para sobreescribir la IP de un Dominio en particular"
+      description: "Crea una entrada para sobreescribir la IP de un Dominio en particular."
+      parameters:
+        - in: query
+          name: q
+          required: false
+          schema:
+            type: string
+            default: ""
+          description: "Este query param se utilizara como filtro sobre los custom domains."
+      responses:
+        200:
+          description: "Operación de lectura exitosa"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Dominio'
     post:
       operationId: "api.dominios.addDomain"
       tags:
@@ -63,38 +86,69 @@ paths:
                 $ref: '#/components/schemas/Dominio'
         400:
           description: "Dominio ya existente o cuerpo del Request mal formado"
+  /custom-domains/{domain}:
     put:
-        operationId: "api.dominios.modificar"
-        tags:
-          - "Dominios"
-        summary: "Edita un Dominio ya existente en el sistema"
-        description: "Edita un Dominio ya existente en el sistema."
-        requestBody:
+      operationId: "api.dominios.modificar"
+      tags:
+        - "Dominios"
+      summary: "Edita un Dominio ya existente en el sistema"
+      description: "Edita un Dominio ya existente en el sistema."
+      parameters:
+        - in: path
+          name: domain
           required: true
-          x-body-name: 'dominio'
+          schema:
+            type: string
+          description: Nombre del Dominio que se desea editar.
+      requestBody:
+        required: true
+        x-body-name: 'dominio'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InputDominio'
+      responses:
+        200:
+          description: "El Dominio se actualizo correctamente"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InputDominio'
-        responses:
-          200:
-            description: "El Dominio se actualizo correctamente"
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/Dominio'
-          404:
-            description: "El Dominio solicitado no se encuentra en sistema"
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/Error'
-          400:
-            description: "Cuerpo del Request mal formado"
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/Dominio'
+        404:
+          description: "El Dominio solicitado no se encuentra en sistema"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        400:
+          description: "Cuerpo del Request mal formado"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: "api.dominios.deleteDomain"
+      tags:
+        - "Dominios"
+      summary: "Borra un dominio existente en el sistema."
+      description: "Borra un dominio existente en el sistema."
+      parameters:
+        - in: path
+          name: domain
+          required: true
+          schema:
+            type: string
+          description: Nombre del Dominio que se desea borrar.
+      responses:
+        200:
+          description: "Operación de borrado exitosa"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dominio'
+        404:
+          description: "El Dominio solicitado no se encuentra en sistema"
+
 # Declaración de tipos de datos
 components:
   schemas:
