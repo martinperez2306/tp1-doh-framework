@@ -16,11 +16,7 @@ from flask import abort, make_response
 #           * ip : string
 #           * custom : boolean
 dominios = {
-    'martin.domain': {
-        'domain': 'martin.domain',
-        'ip': '999.999.999.999',
-        'custom': True
-    }
+    
 }
 
 def resolveRoundRobin(domainCached, newsIps):
@@ -134,37 +130,37 @@ def addDomain(**kwargs):
     ip = dominio.get('ip')
     custom = True
 
-    if not domain:
-        return abort(400, 'Parametro domain requerido no esta presente')
-    if not ip:
-        return abort(400, 'Parametro ip requerido no esta presente')
-
     dup = False
     for dominio_existente in dominios.values():
         dup = domain == dominio_existente.get('domain')
         if dup: break
 
-    if dup:
-        return abort(400, 'Dominio ya existente')
+    if not domain or not ip or dup:
+        error = {
+            'error' : 'custom domain already exists'
+        }
+        return make_response(error,400)
 
     dominioCreado = createDomain(domain,ip,custom)
     dominios[domain] = dominioCreado
 
     return make_response(dominioCreado, 201)
 
-def modificar(**kwargs):
+def modificar(domain, **kwargs):
     """
-    Esta funcion maneja el request PUT /api/custom-domains
+    Esta funcion maneja el request PUT /api/custom-domains/{domain}
 
      :param body:  Dominio a modificar en sistema
     :return:        200 Dominio modificado, 404 Dominio no encontrado en sistema, 400 Request mal formada
     """
 
     dominio = kwargs.get('body')
-    domain = dominio.get('domain')
+    domainBody = dominio.get('domain')
     ip = dominio.get('ip')
 
-    if not domain or not ip:
+    badDomain = domain != domainBody
+
+    if not domain or not ip or badDomain:
         invalidPayload = {
             'error' : 'payload is invalid'
         }
