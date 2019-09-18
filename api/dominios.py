@@ -188,10 +188,15 @@ def deleteDomain(domain):
     :return:        200 domain, 404 domain no encontrado
     """
     if domain not in dominios:
-        return abort(404, 'domain not found')
+        notFound = {
+            'error' : 'domain not found'
+        }
+        return make_response(notFound,404)
 
     dominioAEliminar = dominios.get(domain)
-    dominioAEliminar = createDomain(dominioAEliminar.get('domain'),None,None)
+    dominioAEliminar = {
+        'domain' : dominioAEliminar.get('domain')
+    }
 
     del dominios[domain]
 
