@@ -1,4 +1,5 @@
 import dns.resolver
+import json
 
 from flask import abort, make_response
 
@@ -15,11 +16,7 @@ from flask import abort, make_response
 #           * ip : string
 #           * custom : boolean
 dominios = {
-    'martin.domain': {
-        'domain': 'martin.domain',
-        'ip': '999.999.999.999',
-        'custom': True
-    }
+    
 }
 
 def resolveRoundRobin(domainCached, newsIps):
@@ -105,17 +102,18 @@ def getDomain(domain):
     ips = resolveDns(domain)
     if not ips:
         if domain not in dominios:
-            return abort(404, 'El Dominio solicitado no se encuentra en sistema o bien no se encontro IP por DNS')
+            notFound = {
+                'error' : 'domain not found'
+            }
+            return make_response(notFound,404)
         else:
             return dominios.get(domain)
     else:
         if domain not in dominios:
-            print("Nuevo Dominio " + domain)
             cacheDnsDomain = createDomain(domain,ips,False)
             dominios[domain] = cacheDnsDomain
             return createDomain(cacheDnsDomain.get('domain'), resolveRoundRobin(cacheDnsDomain, ips), cacheDnsDomain.get('custom'))
         else:
-            print("Dominio cacheado " + domain)
             cacheDnsDomain = dominios[domain]
             return createDomain(cacheDnsDomain.get('domain'), resolveRoundRobin(cacheDnsDomain, ips), cacheDnsDomain.get('custom'))
 
@@ -132,43 +130,47 @@ def addDomain(**kwargs):
     ip = dominio.get('ip')
     custom = True
 
-    if not domain:
-        return abort(400, 'Parametro domain requerido no esta presente')
-    if not ip:
-        return abort(400, 'Parametro ip requerido no esta presente')
-
     dup = False
     for dominio_existente in dominios.values():
         dup = domain == dominio_existente.get('domain')
         if dup: break
 
-    if dup:
-        return abort(400, 'Dominio ya existente')
+    if not domain or not ip or dup:
+        error = {
+            'error' : 'custom domain already exists'
+        }
+        return make_response(error,400)
 
     dominioCreado = createDomain(domain,ip,custom)
     dominios[domain] = dominioCreado
 
     return make_response(dominioCreado, 201)
 
-def modificar(**kwargs):
+def modificar(domain, **kwargs):
     """
-    Esta funcion maneja el request PUT /api/custom-domains
+    Esta funcion maneja el request PUT /api/custom-domains/{domain}
 
      :param body:  Dominio a modificar en sistema
     :return:        200 Dominio modificado, 404 Dominio no encontrado en sistema, 400 Request mal formada
     """
 
     dominio = kwargs.get('body')
-    domain = dominio.get('domain')
+    domainBody = dominio.get('domain')
     ip = dominio.get('ip')
 
-    if not domain:
-        return abort(400, 'Parametro domain requerido no esta presente')
-    if not ip:
-        return abort(400, 'Parametro ip requerido no esta presente')
+    badDomain = domain != domainBody
+
+    if not domain or not ip or badDomain:
+        invalidPayload = {
+            'error' : 'payload is invalid'
+        }
+        return make_response(invalidPayload,400)
 
     if domain not in dominios:
-        return abort(404, 'El Dominio solicitado no se encuentra en sistema')
+        notFound = {
+            'error' : 'domain not found'
+        }
+        return make_response(notFound,404)
 
     dominioAModificar = dominios.get(domain)
     dominioAModificar['ip'] = ip
@@ -178,16 +180,39 @@ def modificar(**kwargs):
 
     return make_response(returnDomain,200)
 
-def borrar(id_alumno):
+def deleteDomain(domain):
     """
-    Esta funcion maneja el request DELETE /api/alumnos/{id_alumno}
+    Esta funcion maneja el request DELETE /api/custom-domains/{domain}
 
     :id_alumno body:  id del alumno que se quiere borrar
-    :return:        200 alumno, 404 alumno no encontrado
+    :return:        200 domain, 404 domain no encontrado
     """
-    if id_alumno not in alumnos:
-        return abort(404, 'El alumno no fue encontrado')
+    if domain not in dominios:
+        notFound = {
+            'error' : 'domain not found'
+        }
+        return make_response(notFound,404)
 
-    del alumnos[id_alumno]
+    dominioAEliminar = dominios.get(domain)
+    dominioAEliminar = {
+        'domain' : dominioAEliminar.get('domain')
+    }
 
-    return make_response('', 204)
+    del dominios[domain]
+
+    return make_response(dominioAEliminar, 200)
+
+def getCustomDomains(q):
+
+    response = ItemsResponse()
+    response.items = []
+
+    for dominio in dominios.values():
+        if q in dominio.get('domain') and dominio.get('custom'):
+            response.items.append(dominio)
+
+    return make_response(response.toJSON(), 200)
+
+class ItemsResponse:
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
