@@ -208,7 +208,7 @@ def getCustomDomains(q):
     response.items = []
 
     for dominio in dominios.values():
-        if q in dominio.get('domain'):
+        if q in dominio.get('domain') and dominio.get('custom'):
             response.items.append(dominio)
 
     return make_response(response.toJSON(), 200)
