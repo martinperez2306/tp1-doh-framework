@@ -45,8 +45,8 @@ paths:
       operationId: "api.dominios.getCustomDomains"
       tags:
         - "Dominios"
-      summary: "Crea una entrada para sobreescribir la IP de un Dominio en particular"
-      description: "Crea una entrada para sobreescribir la IP de un Dominio en particular."
+      summary: "Obtiene todas los dominios existentes en el sistema"
+      description: "Obtiene todas los dominios existentes en el sistema."
       parameters:
         - in: query
           name: q
