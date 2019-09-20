@@ -95,9 +95,9 @@ def getDomain(domain):
      :domain body:  nombre del dominio el cual se resuelve el DNS para obtener su(s) IP(s) o bien se selecciona del sistema
     :return:        200 Dominio, 404 Dominio no encontrado en sistema o no se encontro IP por DNS
     """
-    ##PREGUNTA: ¿Que se debe hacer primero, resolver dns o encontrar los customs?
-    ##PREGUNTA: ¿Cacheamos los dominios del DNS y actualizamos el orden que regrese?
-    ##PREGUNTA: ¿Que pasa si agregamos un custom domain que coincida con uno de dns? -> Creo que esto no deberia permitirse en el POST
+
+    if domain in dominios and dominios.get(domain).get('custom'):
+        return dominios.get(domain)
 
     ips = resolveDns(domain)
     if not ips:
@@ -132,7 +132,7 @@ def addDomain(**kwargs):
 
     dup = False
     for dominio_existente in dominios.values():
-        dup = domain == dominio_existente.get('domain')
+        dup = domain == dominio_existente.get('domain') and dominio_existente.get('custom')
         if dup: break
 
     if not domain or not ip or dup:
@@ -166,7 +166,7 @@ def modificar(domain, **kwargs):
         }
         return make_response(invalidPayload,400)
 
-    if domain not in dominios:
+    if domain not in dominios or not dominios.get(domain).get('custom'):
         notFound = {
             'error' : 'domain not found'
         }
@@ -187,7 +187,7 @@ def deleteDomain(domain):
     :id_alumno body:  id del alumno que se quiere borrar
     :return:        200 domain, 404 domain no encontrado
     """
-    if domain not in dominios:
+    if domain not in dominios or not dominios.get(domain).get('custom'):
         notFound = {
             'error' : 'domain not found'
         }
